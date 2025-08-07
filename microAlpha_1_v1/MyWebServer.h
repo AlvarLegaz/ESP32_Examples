@@ -23,6 +23,7 @@ private:
     // Handlers para endpoints
     void handleIndex();
     void handleHealth();
+    void handleInfo();
     void handleConfig();
     void handleConfigPost();
     void handleOutput(); 

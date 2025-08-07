@@ -1,6 +1,8 @@
 #include "main_program.h"
 #include <MyWebServer.h>
 #include "Hardware.h"
+#include "mqtt_manager.h"
+#include "config.h"
 
 #include <WiFi.h>
 
@@ -11,11 +13,21 @@
 #define SWITCH_MODE 1
 
 MyWebServer server(SERVER_PORT);
+
+const char* mqtt_server = "192.168.1.74";  // IP del servidor MQTT
+const uint16_t mqtt_port = 1883;
+MqttManager mqtt(mqtt_server, mqtt_port);
+
 Preferences preferences; 
 
-
 void AppProgram::init(){
+
+  boardName = BOARD_NAME;
+
   HardwareManager::init();
+
+  deviceID = HardwareManager::generateID();
+
   int normal_mode = HardwareManager::getMode();
 
   String ssid_apmode = "DotIOT_NET";
@@ -25,6 +37,11 @@ void AppProgram::init(){
   String ssid = preferences.getString("ssid", "");
   String password = preferences.getString("password", "");
   preferences.end();
+
+  // Configurar cliente MQTT
+  mqtt.setClientId("ESP32_test_publisher");
+  // mqtt.setCredentials("usuario", "contraseña"); // solo si tu broker lo requiere
+  mqtt.begin();
 
   Serial.begin(SERIAL_SPEED);
 
@@ -68,10 +85,36 @@ void AppProgram::init(){
   }
 }
 
+String AppProgram::getDeviceID(){
+  return deviceID;
+}
+
+String AppProgram::getBoardName(){
+  return boardName;
+}
+
 void AppProgram::run() {
-  server.handleClient();
-  handleButtonPress(1,1,PRES_BUTT_MODE);
-  HardwareManager::runBlinkingLed();
+    server.handleClient();
+    handleButtonPress(1, 1, PRES_BUTT_MODE);
+    HardwareManager::runBlinkingLed();
+
+    /*
+    mqtt.loop();
+
+    static unsigned long lastSent = 0;
+    unsigned long now = millis();
+
+    if (now - lastSent > 5000) {
+        lastSent = now;
+
+        if (mqtt.isConnected()) {
+            bool ok = mqtt.publish("test/topic", "Mensaje desde ESP32");
+            Serial.println(ok ? "Publicado correctamente" : "Error al publicar");
+        } else {
+            Serial.println("No conectado a MQTT");
+        }
+    }
+    */
 }
 
 void AppProgram::stop() {

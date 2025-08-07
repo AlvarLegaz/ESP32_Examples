@@ -1,4 +1,6 @@
 #include "Hardware.h"
+#include <MD5Builder.h>
+#include "config.h"
 
 #define ERROR -1
 
@@ -14,6 +16,7 @@ static bool output_2_state;
 
 static int dig_input_1_state;
 static int dig_input_2_state;
+
 
 void HardwareManager::init() {
   pinMode(LED_PIN, OUTPUT);
@@ -32,9 +35,11 @@ void HardwareManager::init() {
   dig_input_2_state = 0;
 }
 
+
 int HardwareManager::getMode(){
   return digitalRead(MODE_PIN);
 }
+
 
 bool HardwareManager::getOutput(int output) {
   switch(output){
@@ -50,6 +55,7 @@ bool HardwareManager::getOutput(int output) {
       return ERROR;
   };
 }
+
 
 void HardwareManager::setOutput(bool value) {
   
@@ -69,6 +75,7 @@ void HardwareManager::setOutput(bool value) {
     
 }
 
+
 bool HardwareManager::getDInput(int dinput) {
   switch(dinput){
     case 1:
@@ -86,6 +93,7 @@ bool HardwareManager::getDInput(int dinput) {
   };
 }
 
+
 void HardwareManager::runBlinkingLed() {
     static unsigned long previousMillis = 0;
     static bool ledState = false;
@@ -98,4 +106,55 @@ void HardwareManager::runBlinkingLed() {
         ledState = !ledState;
         digitalWrite(LED_PIN, ledState);
     }
+}
+
+
+String HardwareManager::generateID() {
+  // Obtener chipId único (64 bits)
+  uint64_t chipId = ESP.getEfuseMac();
+
+  // Convertir chipId a string hexadecimal
+  char chipIdStr[17];
+  sprintf(chipIdStr, "%016llX", chipId);
+
+  // Calcular hash MD5
+  MD5Builder md5;
+  md5.begin();
+  md5.add(chipIdStr);
+  md5.calculate();
+
+  uint8_t hash[16];         // ✅ Reservar buffer local
+  md5.getBytes(hash);       // ✅ Llenar el buffer con el hash
+
+  // Tomar los primeros 4 bytes del hash como un número de 32 bits
+  uint32_t hash32 = (hash[0] << 24) | (hash[1] << 16) | (hash[2] << 8) | hash[3];
+
+  // Convertir ese número a base36
+  return base36(hash32, 8);
+}
+
+
+String HardwareManager::base36(uint32_t value, uint8_t minLength) {
+  const char* chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  String result = "";
+
+  do {
+    result = chars[value % 36] + result;
+    value /= 36;
+  } while (value > 0);
+
+  // Padding con '0' si es más corto que minLength
+  while (result.length() < minLength) {
+    result = "0" + result;
+  }
+
+  return result;
+}
+
+String HardwareManager::getBoardName(){
+  return BOARD_NAME;
+}
+
+String HardwareManager::getFirmwareVersion(){
+  return String(MAJOR_VERSION) + MINOR_VERSION + SUBVERSION;
 }

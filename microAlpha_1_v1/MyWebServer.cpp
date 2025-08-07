@@ -11,6 +11,8 @@ void MyWebServer::initEndpoints() {
   server.on("/", [this]() { handleIndex(); });
   server.on("/health", [this]() { handleHealth(); });
 
+  server.on("/info", HTTP_GET, [this]() { handleInfo(); });
+
   server.on("/switch", HTTP_GET, [this]() { handleOutput(); });
   server.on("/switch", HTTP_PUT, [this]() { handleSetOutput(); });
 
@@ -42,7 +44,21 @@ void MyWebServer::handleIndex() {
   server.send(200, "text/html", index_response);
 }
 
+void MyWebServer::handleInfo() {
+  StaticJsonDocument<256> json;
 
+  // Agregar múltiples campos al objeto JSON
+  json["BoardName"]   = HardwareManager::getBoardName();
+  json["DeviceID"]    = HardwareManager::generateID();
+  json["FirmwareVer"] = HardwareManager::getFirmwareVersion();
+  json["Status"]      = "OK";
+  json["Uptime"]      = millis() / 1000; // tiempo en segundos
+
+  String response;
+  serializeJson(json, response);
+
+  server.send(200, "application/json", response);
+}
 void MyWebServer::handleOutput() {
   StaticJsonDocument<100> json;
   json["switch"] = HardwareManager::getOutput(1);
