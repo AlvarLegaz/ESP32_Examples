@@ -44,6 +44,7 @@ void MyWebServer::handleIndex() {
   server.send(200, "text/html", index_response);
 }
 
+
 void MyWebServer::handleInfo() {
   StaticJsonDocument<256> json;
 
@@ -59,6 +60,8 @@ void MyWebServer::handleInfo() {
 
   server.send(200, "application/json", response);
 }
+
+
 void MyWebServer::handleOutput() {
   StaticJsonDocument<100> json;
   json["switch"] = HardwareManager::getOutput(1);
@@ -68,6 +71,7 @@ void MyWebServer::handleOutput() {
 
   server.send(200, "application/json", response);
 }
+
 
 void MyWebServer::handleSetOutput() {
   // Parsear JSON del body
@@ -134,6 +138,7 @@ void MyWebServer::handleConfig() {
   WiFi.scanDelete();
 }
 
+
 void MyWebServer::handleConfigPost() {
   String ssid = server.arg("ssid");
   String password = server.arg("password");
@@ -150,7 +155,3 @@ void MyWebServer::handleConfigPost() {
   server.send(200, "text/html",
     "<html><body><h1>Configuración Guardada. Reinicie el dispositivo.</h1></body></html>");
 }
-
-
-
-   

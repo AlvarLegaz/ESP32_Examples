@@ -23,10 +23,9 @@ Preferences preferences;
 void AppProgram::init(){
 
   boardName = BOARD_NAME;
+  deviceID = HardwareManager::generateID();
 
   HardwareManager::init();
-
-  deviceID = HardwareManager::generateID();
 
   int normal_mode = HardwareManager::getMode();
 

@@ -2,3 +2,5 @@
 #define MINOR_VERSION "0."
 #define SUBVERSION "0"
 #define BOARD_NAME "HektaNode"
+
+#define DEBUG

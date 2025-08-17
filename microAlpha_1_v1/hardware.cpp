@@ -123,8 +123,8 @@ String HardwareManager::generateID() {
   md5.add(chipIdStr);
   md5.calculate();
 
-  uint8_t hash[16];         // ✅ Reservar buffer local
-  md5.getBytes(hash);       // ✅ Llenar el buffer con el hash
+  uint8_t hash[16];         // Reservar buffer local
+  md5.getBytes(hash);       // Llenar el buffer con el hash
 
   // Tomar los primeros 4 bytes del hash como un número de 32 bits
   uint32_t hash32 = (hash[0] << 24) | (hash[1] << 16) | (hash[2] << 8) | hash[3];
